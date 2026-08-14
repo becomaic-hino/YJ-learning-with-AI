@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YJ learning with AI — AI 활용 학습 로그</title>
+<meta name="description" content="낯선 산업(통신·반도체)을 AI와 함께 학습한 기록의 원본 공개. 질문 원문과 정정 이력 전량을 CSV로 발행한다.">
+<style>
+  :root {
+    color-scheme: light;
+    --plane: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --hairline: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --accent: #2a78d6;
+    --accent-deep: #1c5cab;
+    --bubble: #e7f0fc;
+    --bubble-ink: #17334f;
+    --lv1: #86b6ef; --lv2: #2a78d6; --lv3: #104281; --dir: #898781;
+    --lv1-ink: #0b0b0b; --lv2-ink: #ffffff; --lv3-ink: #ffffff; --dir-ink: #0b0b0b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --plane: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --hairline: #2c2c2a;
+      --border: rgba(255,255,255,0.10);
+      --accent: #3987e5;
+      --accent-deep: #6da7ec;
+      --bubble: #1e2c40;
+      --bubble-ink: #cfe2fa;
+      --lv1: #9ec5f4; --lv2: #5598e7; --lv3: #256abf; --dir: #898781;
+      --lv1-ink: #0b0b0b; --lv2-ink: #0b0b0b; --lv3-ink: #ffffff; --dir-ink: #0b0b0b;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--plane);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+
+  /* ── Hero ─────────────────────────── */
+  header { padding: 60px 0 40px; }
+  .eyebrow {
+    font-size: 13px; letter-spacing: 0.04em; color: var(--accent);
+    font-weight: 600; margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(24px, 4.5vw, 32px); line-height: 1.4;
+    font-weight: 700; letter-spacing: -0.01em; word-break: keep-all;
+  }
+  .lede {
+    margin-top: 14px; color: var(--ink-2); font-size: 17px; word-break: keep-all;
+  }
+  .curation-note {
+    margin-top: 22px; padding: 12px 16px;
+    border-left: 2px solid var(--accent);
+    background: var(--surface); border-radius: 0 8px 8px 0;
+    font-size: 14px; color: var(--ink-2); word-break: keep-all;
+  }
+  .stat-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-top: 32px;
+  }
+  @media (max-width: 560px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 14px 14px;
+    transition: border-color .15s ease;
+  }
+  .stat:hover { border-color: var(--accent); }
+  .stat a { text-decoration: none; color: inherit; display: block; }
+  .stat .label { font-size: 13px; color: var(--ink-2); margin-bottom: 4px; word-break: keep-all; }
+  .stat .value { font-size: 30px; font-weight: 650; letter-spacing: -0.01em; }
+  .stat .sub { font-size: 12px; color: var(--muted); margin-top: 2px; word-break: keep-all; }
+
+  /* ── Sections ─────────────────────── */
+  section { padding: 40px 0; border-top: 1px solid var(--hairline); }
+  h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; word-break: keep-all; }
+  .section-sub { color: var(--ink-2); font-size: 15px; margin-top: 6px; margin-bottom: 24px; word-break: keep-all; }
+
+  /* ── Domain cards + chat bubbles ──── */
+  .domain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 680px) { .domain-grid { grid-template-columns: 1fr; } }
+  .domain-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; display: flex; flex-direction: column;
+  }
+  .domain-card .tag {
+    align-self: flex-start; font-size: 12px; font-weight: 600;
+    color: var(--accent-deep); border: 1px solid var(--border);
+    padding: 2px 9px; border-radius: 99px; margin-bottom: 12px;
+  }
+  .domain-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 2px; word-break: keep-all; }
+  .domain-card .period { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+  .chat { display: flex; flex-direction: column; gap: 6px; }
+  .msg { display: flex; flex-direction: column; align-items: flex-end; }
+  .msg .meta { font-size: 11.5px; color: var(--muted); margin-bottom: 4px; display: flex; gap: 6px; align-items: center; }
+  .msg .meta .lvchip {
+    font-weight: 700; color: var(--accent-deep);
+  }
+  .msg .balloon {
+    background: var(--bubble); color: var(--bubble-ink);
+    border-radius: 16px 16px 4px 16px;
+    padding: 10px 14px; font-size: 14px; line-height: 1.6;
+    max-width: 94%; word-break: keep-all; text-align: left;
+  }
+  .chat-divider {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--muted); margin: 8px 0;
+  }
+  .chat-divider::before, .chat-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--hairline);
+  }
+  .reveal-btn {
+    align-self: center; margin: 6px 0 2px;
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--border); border-radius: 99px;
+    padding: 6px 16px; cursor: pointer;
+  }
+  .reveal-btn:hover { border-color: var(--accent); }
+  .hidden-msg { display: none; }
+  .hidden-msg.shown { display: flex; animation: rise .35s ease; }
+  .chat-divider.hidden-msg.shown { display: flex; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .role-note {
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hairline);
+    font-size: 13px; color: var(--ink-2); word-break: keep-all;
+  }
+  .role-note b { color: var(--ink); }
+
+  /* ── Level chart ──────────────────── */
+  .chart-block {
+    margin-top: 14px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px;
+  }
+  .chart-block h3 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .chart-block .hint { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; }
+  .lvdef-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px;
+  }
+  @media (max-width: 680px) { .lvdef-grid { grid-template-columns: repeat(2, 1fr); } }
+  .lvdef {
+    border: 1px solid var(--hairline); border-radius: 10px; padding: 10px 12px;
+  }
+  .lvdef .name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .lvdef .sw { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .lvdef .def { font-size: 12px; color: var(--ink-2); line-height: 1.5; word-break: keep-all; }
+  .lvdef .anchor { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.45; word-break: keep-all; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .bar-row .bar-label { width: 52px; font-size: 13px; font-weight: 600; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .bar { display: flex; gap: 2px; height: 22px; }
+  .seg {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 650; cursor: default; position: relative;
+    transition: filter .12s ease;
+  }
+  .seg:hover { filter: brightness(1.12); }
+  .bar .seg:first-child { border-radius: 4px 0 0 4px; }
+  .bar .seg:last-child { border-radius: 0 4px 4px 0; }
+  .bar .seg:only-child { border-radius: 4px; }
+  .seg.l1 { background: var(--lv1); color: var(--lv1-ink); }
+  .seg.l2 { background: var(--lv2); color: var(--lv2-ink); }
+  .seg.l3 { background: var(--lv3); color: var(--lv3-ink); }
+  .seg.dir { background: var(--dir); color: var(--dir-ink); }
+  .bar-total { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+  .chart-note { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; word-break: keep-all; }
+  .chart-note b { color: var(--ink); }
+  #tooltip {
+    position: absolute; z-index: 10; display: none; max-width: 300px;
+    background: var(--ink); color: var(--plane);
+    border-radius: 8px; padding: 8px 11px; font-size: 12.5px; line-height: 1.5;
+    pointer-events: none; word-break: keep-all;
+  }
+  details.l3list { margin-top: 16px; border-top: 1px solid var(--hairline); padding-top: 12px; }
+  details.l3list summary {
+    font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; list-style: none;
+  }
+  details.l3list summary::before { content: "▸ "; }
+  details.l3list[open] summary::before { content: "▾ "; }
+  .l3item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--hairline); }
+  .l3item:last-child { border-bottom: none; }
+  .l3item .chip {
+    flex-shrink: 0; align-self: flex-start; font-size: 11px; font-weight: 700;
+    padding: 1px 8px; border-radius: 99px; margin-top: 2px;
+    background: var(--bubble); color: var(--accent-deep);
+  }
+  .l3item .body { min-width: 0; }
+  .l3item .when { font-size: 11.5px; color: var(--muted); margin-bottom: 2px; }
+  .l3item .q { font-size: 13px; color: var(--ink); line-height: 1.55; word-break: keep-all; }
+  .l3item .why { font-size: 12px; color: var(--accent-deep); margin-top: 3px; word-break: keep-all; }
+  details.tableview { margin-top: 14px; }
+  details.tableview summary {
+    font-size: 12.5px; color: var(--muted); cursor: pointer; list-style: none;
+  }
+  details.tableview summary::before { content: "▸ "; }
+  details.tableview[open] summary::before { content: "▾ "; }
+  details.tableview table { margin-top: 8px; border-collapse: collapse; font-size: 12.5px; width: 100%; }
+  details.tableview th, details.tableview td {
+    border: 1px solid var(--hairline); padding: 5px 9px; text-align: right;
+  }
+  details.tableview th:first-child, details.tableview td:first-child { text-align: left; }
+  details.tableview th { color: var(--ink-2); font-weight: 600; }
+
+  /* before/after strip */
+  .delta-strip {
+    margin-top: 14px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+  }
+  .delta-strip .k { font-size: 12px; font-weight: 600; color: var(--accent-deep); letter-spacing: 0.03em; margin-bottom: 10px; }
+  .delta-cols { display: flex; align-items: stretch; gap: 12px; }
+  .delta-col { flex: 1; font-size: 13.5px; word-break: keep-all; }
+  .delta-col .when { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 3px; }
+  .delta-arrow { align-self: center; color: var(--accent); font-size: 18px; flex-shrink: 0; }
+  @media (max-width: 560px) {
+    .delta-cols { flex-direction: column; gap: 8px; }
+    .delta-arrow { transform: rotate(90deg); align-self: flex-start; margin-left: 4px; }
+  }
+
+  /* ── Correction cards ─────────────── */
+  details.corr {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; margin-bottom: 12px; overflow: hidden;
+  }
+  details.corr summary {
+    list-style: none; cursor: pointer; padding: 16px 20px;
+    display: flex; align-items: baseline; gap: 10px;
+    font-size: 15px; font-weight: 600; word-break: keep-all;
+  }
+  details.corr summary::-webkit-details-marker { display: none; }
+  details.corr summary .chev {
+    margin-left: auto; color: var(--muted); font-weight: 400;
+    transition: transform .15s ease; flex-shrink: 0;
+  }
+  details.corr[open] summary .chev { transform: rotate(90deg); }
+  details.corr summary .src {
+    font-size: 12px; font-weight: 600; color: var(--accent-deep); flex-shrink: 0;
+  }
+  .corr-body { padding: 0 20px 18px; border-top: 1px solid var(--hairline); }
+  .corr-step { padding: 13px 0 0; }
+  .corr-step .k { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.03em; margin-bottom: 3px; }
+  .corr-step .v { font-size: 14px; color: var(--ink); word-break: keep-all; }
+  .corr-step .v.strike { color: var(--ink-2); }
+  .corr-step.fix .k { color: var(--accent-deep); }
+  .corr-step a { color: var(--accent); }
+
+  /* ── Footer ───────────────────────── */
+  footer { border-top: 1px solid var(--hairline); padding: 32px 0 64px; }
+  footer h2 { font-size: 16px; margin-bottom: 14px; }
+  .rawlist { list-style: none; }
+  .rawlist li { padding: 7px 0; border-bottom: 1px solid var(--hairline); font-size: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .rawlist li:last-child { border-bottom: none; }
+  .rawlist a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .rawlist a:hover { text-decoration: underline; }
+  .rawlist .desc { color: var(--muted); font-size: 13px; }
+  .notice { margin-top: 20px; font-size: 13px; color: var(--ink-2); word-break: keep-all; }
+  .notice + .notice { margin-top: 10px; }
+  .notice b { color: var(--ink); }
+  .notice a { color: var(--accent); }
+  .updated { margin-top: 24px; font-size: 13px; color: var(--muted); }
+  .load-error {
+    display: none; margin-top: 20px; padding: 12px 16px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 13px; color: var(--ink-2);
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="eyebrow">AI 활용 학습 로그 · 2026-04 ~ <span id="stat-updated-eyebrow">갱신 중</span></div>
+  <!-- [가제] 아래 h1·lede 문구는 발행 전 확정 필요 -->
+  <h1>질문 <span id="stat-q-inline">–</span>건, 정정 <span id="stat-c-inline">–</span>건.<br>틀린 궤적까지 그대로 남긴 학습 기록입니다.</h1>
+  <p class="lede">2026년 4월 통신, 8월 반도체 — 낯선 산업을 AI와 함께 돌파하는 같은 방법을 두 번 적용했습니다. 이 저장소는 지금도 자라고 있습니다.</p>
+
+  <div class="stat-row">
+    <div class="stat"><a href="data/questions.csv">
+      <div class="label">질문·지시 원문</div>
+      <div class="value" id="stat-questions">–</div>
+      <div class="sub">CSV 전량 공개</div>
+    </a></div>
+    <div class="stat"><a href="data/corrections.csv">
+      <div class="label">정정 기록</div>
+      <div class="value" id="stat-corrections">–</div>
+      <div class="sub" id="stat-corrections-sub">–</div>
+    </a></div>
+    <div class="stat"><a href="#corrections">
+      <div class="label">AI 오류 적발</div>
+      <div class="value" id="stat-b">–</div>
+      <div class="sub">이 중 2건은 1차 자료로 검증</div>
+    </a></div>
+    <div class="stat"><a href="#domains">
+      <div class="label">적용 산업</div>
+      <div class="value" id="stat-domains">2</div>
+      <div class="sub">통신 → 반도체</div>
+    </a></div>
+  </div>
+
+  <div class="curation-note">
+    이 페이지는 3분 요약입니다. 모든 숫자는 저장소의 원데이터 CSV에서 로드 시점에 직접 계산되며, 무엇을 앞세우고 무엇을 부록으로 내릴지는 제가 정했습니다.
+  </div>
+  <div class="load-error" id="load-error">원데이터 로드에 실패했습니다. <a href="data/questions.csv">data/questions.csv</a>를 직접 확인해 주세요.</div>
+</header>
+
+<section class="wrap" id="domains">
+  <h2>같은 방법, 두 산업</h2>
+  <p class="section-sub">모르는 산업에 들어갈 때마다 AI 백서를 만들고, 그 위에서 질문·검증했습니다. 아래 말풍선은 실제 질문 원문입니다.</p>
+
+  <div class="domain-grid">
+    <div class="domain-card">
+      <span class="tag">1회차</span>
+      <h3>통신</h3>
+      <div class="period">2026-04 · A사 통신장비 사업부 직무면접 준비</div>
+      <div class="chat">
+        <div class="msg">
+          <div class="meta">2026-04-29 · 학습 시작</div>
+          <div class="balloon">나 문과라서 전자기학 아무것도 모름... 맥스웰 방정식만 들어봤어</div>
+        </div>
+        <button class="reveal-btn" data-reveal="t">같은 날, 4개 메시지 뒤 ↓</button>
+        <div class="chat-divider hidden-msg" data-group="t">몇 시간 뒤, 같은 세션</div>
+        <div class="msg hidden-msg" data-group="t">
+          <div class="meta"><span class="lvchip">전략 판단</span> 2026-04-29</div>
+          <div class="balloon">왜 A사 통신장비 사업부가 그만큼 우수한 연구실적이 있는데도 최근 몇년 실적부진에 시달린 거야? 2015~현재 십년간의 업계동향과 시장, 사업부분석리포트를 작성해줘</div>
+        </div>
+      </div>
+      <div class="role-note"><b>AI에 준 역할</b> — 산출 담당. 학습자료·백서 제작을 통째로 위임했다.</div>
+    </div>
+
+    <div class="domain-card">
+      <span class="tag">2회차</span>
+      <h3>반도체</h3>
+      <div class="period">2026-08 · SK하이닉스 영업·마케팅 지원</div>
+      <div class="chat">
+        <div class="msg">
+          <div class="meta">2026-08-03 · 학습 시작</div>
+          <div class="balloon">나 26-1학기에 반도체 생산관리 직무 아주잠깐 준비했어서 뭐 hbm이 핫하다 반도체 7대공정이랑 하닉 메모리반도체 업황 이런거 다 알아</div>
+        </div>
+        <button class="reveal-btn" data-reveal="s">다음 날 ↓</button>
+        <div class="chat-divider hidden-msg" data-group="s">다음 날</div>
+        <div class="msg hidden-msg" data-group="s">
+          <div class="meta"><span class="lvchip">AI 역할 재설계</span> 2026-08-04</div>
+          <div class="balloon">너 혼자 다 쓰지 말고, 1차 리서치한 뒤에 리서치현황(원문 인용 병기)을 그대로 보여줘. 너는 큰 그림을 못 그리는 것 같더라.</div>
+        </div>
+      </div>
+      <div class="role-note"><b>AI에 준 역할</b> — 수집 담당으로 제한. 종합과 판단은 본인이 맡았다.</div>
+    </div>
+  </div>
+
+  <div class="chart-block">
+    <h3>질문의 층위 — 무엇을 물었나</h3>
+    <div class="hint">질문 전수를 4개 층위로 분류했습니다. 분류 기준을 먼저 정하고 그 기준으로 사후 분류 — 경계 사례는 무조건 낮은 층위로 내리는 보수 원칙을 적용했습니다 (<a href="docs/methodology.md" style="color:var(--accent)">methodology.md</a>). 각 카드의 예시는 실제 질문 원문입니다.</div>
+
+    <div class="lvdef-grid">
+      <div class="lvdef">
+        <div class="name"><span class="sw seg l1"></span>용어 정의</div>
+        <div class="def">단어의 뜻을 묻는다. 새 영역에 들어갈 때마다 다시 나온다.</div>
+        <div class="anchor">"믹스, 비트그로스라는 용어가 정확히 뭔지"</div>
+      </div>
+      <div class="lvdef">
+        <div class="name"><span class="sw seg l2"></span>구조·인과</div>
+        <div class="def">왜 그렇게 되는지, 인과 사슬을 묻는다.</div>
+        <div class="anchor">"1x 1y 1z 세는 것 자체가 더 작게 못 만든다는 거 아니야?"</div>
+      </div>
+      <div class="lvdef">
+        <div class="name"><span class="sw seg l3"></span>전략 판단</div>
+        <div class="def">변수의 상충·데이터의 모순·리서치 방법 자체를 판단한다.</div>
+        <div class="anchor">"말을 아끼고 있다는 거네? 이게 가장 중요한 단서라고 봐"</div>
+      </div>
+      <div class="lvdef">
+        <div class="name"><span class="sw seg dir"></span>작업 지시</div>
+        <div class="def">질문이 아니라 AI에게 산출물·역할을 지시한다.</div>
+        <div class="anchor">"백서를 아이패드로 읽기 편하게 pdf로도 만들어줘"</div>
+      </div>
+    </div>
+
+    <div id="chart"></div>
+    <div class="chart-note" id="chart-note"></div>
+
+    <details class="l3list">
+      <summary id="l3-summary">전략 판단 질문 전체 보기</summary>
+      <div id="l3-holder"></div>
+    </details>
+    <details class="tableview"><summary>표로 보기</summary><div id="table-holder"></div></details>
+  </div>
+
+  <div class="delta-strip">
+    <div class="k">4개월 사이에 변한 것</div>
+    <div class="delta-cols">
+      <div class="delta-col">
+        <div class="when">4월 · 통신</div>
+        이미 아는 영역(면접 실정)에서 AI 산출물의 <b>톤과 품질</b>을 지적했다
+      </div>
+      <div class="delta-arrow">→</div>
+      <div class="delta-col">
+        <div class="when">8월 · 반도체</div>
+        배우는 중인 낯선 영역에서 AI의 <b>사실 오류를 1차 자료 원문</b>으로 잡았다
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="corrections">
+  <h2>AI의 오류를 원문으로 잡은 기록</h2>
+  <p class="section-sub">이 로그에서 유일하게 외부 검증이 개입하는 지표입니다. 근거가 공개 원문이라 누구나 재확인할 수 있습니다.</p>
+
+  <details class="corr" id="corr-B01">
+    <summary><span class="src">SEC 424B4</span> VEU 수출허가 — "건별 허가"가 아니라 연간 허가였다 <span class="chev">›</span></summary>
+    <div class="corr-body">
+      <div class="corr-step"><div class="k">AI의 답</div><div class="v strike" data-field="initial">–</div></div>
+      <div class="corr-step"><div class="k">무엇이 틀렸나</div><div class="v" data-field="wrong">–</div></div>
+      <div class="corr-step fix"><div class="k">원문 확인 결과 (2026-08-04)</div><div class="v" data-field="corrected">–</div></div>
+    </div>
+  </details>
+
+  <details class="corr" id="corr-B02">
+    <summary><span class="src">연방관보</span> 232조 관세 — "D램·HBM 포함" 보도는 틀렸다 <span class="chev">›</span></summary>
+    <div class="corr-body">
+      <div class="corr-step"><div class="k">AI의 답</div><div class="v strike" data-field="initial">–</div></div>
+      <div class="corr-step"><div class="k">무엇이 틀렸나</div><div class="v" data-field="wrong">–</div></div>
+      <div class="corr-step fix"><div class="k">원문 확인 결과 (2026-08-05)</div><div class="v" data-field="corrected">–</div></div>
+    </div>
+  </details>
+
+  <details class="corr">
+    <summary><span class="src">파일 메타데이터</span> 이 아카이브 자체도 검증 대상이었다 <span class="chev">›</span></summary>
+    <div class="corr-body">
+      <div class="corr-step"><div class="k">AI의 답</div><div class="v strike">AI가 학습 채팅의 타임라인을 "8/3 저녁 스레드 개설"로 재구성해 회신</div></div>
+      <div class="corr-step"><div class="k">무엇이 틀렸나</div><div class="v">해당 채팅 도구 자체가 2026-08-04 15:19에 만들어졌다(파일 생성 시각). AI 대화 기록의 자체 타임라인 재구성은 신뢰할 수 없다는 원칙이 아카이브 안에서 실제로 검증됨</div></div>
+      <div class="corr-step fix"><div class="k">원문 확인 결과 (2026-08-13)</div><div class="v">해당 질문들의 날짜를 8/4로 정정해 기록 — 상세는 <a href="docs/learning-log.md">learning-log.md</a> 7-1</div></div>
+    </div>
+  </details>
+</section>
+
+<footer class="wrap">
+  <h2>원데이터</h2>
+  <ul class="rawlist">
+    <li><a href="data/questions.csv">questions.csv</a><span class="desc">질문·지시 원문 전량 (날짜·신뢰도·층위·출처)</span></li>
+    <li><a href="data/corrections.csv">corrections.csv</a><span class="desc">정정 전량 (오개념 → 교정 → 재적용 여부)</span></li>
+    <li><a href="docs/learning-log.md">learning-log.md</a><span class="desc">통합 로그 본문 — 서사가 아니라 근거 중심</span></li>
+    <li><a href="docs/methodology.md">methodology.md</a><span class="desc">분류 기준·날짜 신뢰도·편집 규칙 전문</span></li>
+    <li><a href="CHANGELOG.md">CHANGELOG.md</a><span class="desc">갱신 로그 — 이 저장소는 계속 자랍니다</span></li>
+  </ul>
+
+  <p class="notice"><b>이 저장소의 한계를 먼저 적습니다.</b> 커밋 이력은 발행일 이후만 증명합니다. 그 이전의 날짜는 파일 메타데이터와 본인 진술 기반이며, 전 항목에 신뢰도 등급(확정/추정/불명)을 표기했습니다. 반도체 학습 기간은 10일입니다 — 방법론 5개월, 반도체 적용 10일이 정확한 표현입니다. 전문은 <a href="README.md">README</a>.</p>
+  <p class="notice"><b>편집은 두 종류뿐입니다.</b> 타사 지원 맥락의 회사명을 'A사'로 치환했고, 생활 정보 3곳을 대괄호로 마스킹했습니다. 반말·이모티콘·틀린 추론을 포함한 나머지는 원문 그대로입니다.</p>
+
+  <p class="updated">마지막 기록: <span id="stat-updated">–</span> · 다음 기록 예정: 모의과제 A 실전 풀이 (정정 A01~A04 재적용 측정)</p>
+</footer>
+
+<div id="tooltip"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── chat reveal ── */
+  document.querySelectorAll(".reveal-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var g = btn.getAttribute("data-reveal");
+      document.querySelectorAll('.hidden-msg[data-group="' + g + '"]').forEach(function (el) {
+        el.classList.add("shown");
+      });
+      btn.style.display = "none";
+    });
+  });
+
+  /* ── minimal CSV parser (RFC4180-style quotes) ── */
+  function parseCSV(text) {
+    var rows = [], row = [], cur = "", inQ = false;
+    text = text.replace(/\r\n/g, "\n").replace(/^﻿/, "");
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { cur += '"'; i++; }
+          else { inQ = false; }
+        } else { cur += ch; }
+      } else {
+        if (ch === '"') { inQ = true; }
+        else if (ch === ",") { row.push(cur); cur = ""; }
+        else if (ch === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+        else { cur += ch; }
+      }
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    var header = rows.shift();
+    return rows
+      .filter(function (r) { return r.length > 1 || (r[0] && r[0].trim()); })
+      .map(function (r) {
+        var o = {};
+        header.forEach(function (h, idx) { o[h.trim()] = (r[idx] || "").trim(); });
+        return o;
+      });
+  }
+
+  function getData(path) {
+    if (window.__EMBEDDED_DATA__ && window.__EMBEDDED_DATA__[path]) {
+      return Promise.resolve(window.__EMBEDDED_DATA__[path]);
+    }
+    return fetch(path).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.text();
+    });
+  }
+
+  function text(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+
+  var LEVELS = [
+    { key: "L1", cls: "l1", name: "용어 정의" },
+    { key: "L2", cls: "l2", name: "구조·인과" },
+    { key: "L3", cls: "l3", name: "전략 판단" },
+    { key: "directive", cls: "dir", name: "작업 지시" }
+  ];
+
+  Promise.all([getData("data/questions.csv"), getData("data/corrections.csv")])
+    .then(function (res) {
+      var qs = parseCSV(res[0]);
+      var cs = parseCSV(res[1]);
+
+      var tel = qs.filter(function (q) { return q.source === "a-company-telecom-chat"; });
+      var sem = qs.filter(function (q) { return q.source !== "a-company-telecom-chat"; });
+
+      function levelCounts(list) {
+        var c = {};
+        LEVELS.forEach(function (l) { c[l.key] = list.filter(function (q) { return q.level === l.key; }).length; });
+        return c;
+      }
+      function example(list, key) {
+        var q = list.find(function (r) { return r.level === key; });
+        if (!q) return "";
+        var t = q.question.replace(/^\([^)]*\)\s*/, "");
+        return t.length > 64 ? t.slice(0, 64) + "…" : t;
+      }
+
+      var domains = [
+        { name: "통신", list: tel, counts: levelCounts(tel) },
+        { name: "반도체", list: sem, counts: levelCounts(sem) }
+      ];
+      var maxTotal = Math.max(tel.length, sem.length);
+
+      /* bars */
+      var tooltip = document.getElementById("tooltip");
+      function showTip(html, x, y) {
+        tooltip.innerHTML = html;
+        tooltip.style.display = "block";
+        var r = tooltip.getBoundingClientRect();
+        var left = Math.min(x + 12, window.innerWidth - r.width - 12);
+        tooltip.style.left = (left + window.scrollX) + "px";
+        tooltip.style.top = (y + window.scrollY - r.height - 10) + "px";
+      }
+      function hideTip() { tooltip.style.display = "none"; }
+      document.addEventListener("scroll", hideTip, { passive: true });
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest(".seg")) hideTip();
+      });
+
+      var chart = document.getElementById("chart");
+      domains.forEach(function (d) {
+        var rowEl = document.createElement("div");
+        rowEl.className = "bar-row";
+        var lab = document.createElement("div");
+        lab.className = "bar-label";
+        lab.textContent = d.name;
+        rowEl.appendChild(lab);
+        var track = document.createElement("div");
+        track.className = "bar-track";
+        var bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.width = (d.list.length / maxTotal * 100) + "%";
+        bar.setAttribute("role", "img");
+        bar.setAttribute("aria-label", d.name + " 질문 " + d.list.length + "건: " +
+          LEVELS.map(function (l) { return l.name + " " + d.counts[l.key]; }).join(", "));
+        LEVELS.forEach(function (l) {
+          var n = d.counts[l.key];
+          if (!n) return;
+          var seg = document.createElement("div");
+          seg.className = "seg " + l.cls;
+          seg.style.flexGrow = n;
+          seg.style.flexBasis = "0";
+          seg.dataset.count = n;
+          var ex = example(d.list, l.key);
+          var tip = "<b>" + l.name + "</b> · " + n + "건" + (ex ? "<br>예 — “" + ex + "”" : "");
+          seg.addEventListener("mouseenter", function (e) { showTip(tip, e.clientX, e.clientY); });
+          seg.addEventListener("mousemove", function (e) { showTip(tip, e.clientX, e.clientY); });
+          seg.addEventListener("mouseleave", hideTip);
+          seg.addEventListener("click", function (e) { showTip(tip, e.clientX, e.clientY); e.stopPropagation(); });
+          bar.appendChild(seg);
+        });
+        track.appendChild(bar);
+        var total = document.createElement("span");
+        total.className = "bar-total";
+        total.textContent = d.list.length + "건";
+        track.appendChild(total);
+        rowEl.appendChild(track);
+        chart.appendChild(rowEl);
+      });
+
+      /* inline labels where they fit */
+      requestAnimationFrame(function () {
+        document.querySelectorAll("#chart .seg").forEach(function (seg) {
+          if (seg.getBoundingClientRect().width >= 26) seg.textContent = seg.dataset.count;
+        });
+      });
+
+      /* note under chart */
+      document.getElementById("chart-note").innerHTML =
+        "반도체에서 <b>전략 판단이 " + domains[1].counts.L3 + "건</b>으로 늘었다 (통신 " +
+        domains[0].counts.L3 + "건). 순서도 눈여겨볼 것 — 반도체에서는 전략 판단(8/3, 확정)이 용어 질문(8/4, 확정)보다 <b>먼저</b> 나왔다. " +
+        "기초부터 쌓은 게 아니라, 판단을 먼저 시도하고 막히는 지점을 역으로 메우는 패턴이다.";
+
+      /* L3 full list */
+      var WHY = [
+        { m: "실적부진에 시달린", w: "기술력과 실적이 어긋나는 모순을 식별" },
+        { m: "deployment ability", w: "기술 우위 서사와 고객사의 실제 선택(계약 결렬)이 어긋나는 지점을 식별" },
+        { m: "왜 하이닉스 지원하냐", w: "읽는 사람의 인지 순서로 문서 구조를 판단" },
+        { m: "혼자 다 쓰지 말고", w: "AI의 강점(수집)과 약점(종합)을 분리해 워크플로를 재설계" },
+        { m: "컨퍼런스콜 전문", w: "2차 자료 취합 vs 1차 자료 직독의 비용을 비교해 방법 전환" },
+        { m: "말을 아끼고", w: "데이터의 부재 자체를 신호로 해석" },
+        { m: "업황(시장) 조사한것도", w: "리서치의 부족한 축을 스스로 특정해 범위를 재설정" },
+        { m: "하나만 지원", w: "제도 제약을 들어 AI의 전략 전제를 뒤집음" },
+        { m: "블렌디드 ASP가 떨어지는 조건", w: "확인문제에 3개 가설로 답변 — 이 중 근거 오류 2건이 정정 A03·A04로 이어짐" }
+      ];
+      var l3all = qs.filter(function (q) { return q.level === "L3"; });
+      document.getElementById("l3-summary").textContent = "전략 판단 질문 " + l3all.length + "건 전체 보기";
+      var holder = document.getElementById("l3-holder");
+      l3all.forEach(function (q) {
+        var isTel = q.source === "a-company-telecom-chat";
+        var why = "";
+        WHY.forEach(function (w) { if (q.question.indexOf(w.m) !== -1) why = w.w; });
+        var item = document.createElement("div");
+        item.className = "l3item";
+        var chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = isTel ? "통신" : "반도체";
+        item.appendChild(chip);
+        var body = document.createElement("div");
+        body.className = "body";
+        var when = document.createElement("div");
+        when.className = "when";
+        when.textContent = q.date + " (" + q.date_confidence + ")";
+        body.appendChild(when);
+        var qt = document.createElement("div");
+        qt.className = "q";
+        qt.textContent = "“" + q.question + "”";
+        body.appendChild(qt);
+        if (why) {
+          var wl = document.createElement("div");
+          wl.className = "why";
+          wl.textContent = "왜 전략 판단인가 — " + why;
+          body.appendChild(wl);
+        }
+        item.appendChild(body);
+        holder.appendChild(item);
+      });
+
+      /* table view */
+      var tbl = "<table><tr><th>층위</th><th>통신</th><th>반도체</th></tr>";
+      LEVELS.forEach(function (l) {
+        tbl += "<tr><td>" + l.name + "</td><td>" + domains[0].counts[l.key] + "</td><td>" + domains[1].counts[l.key] + "</td></tr>";
+      });
+      tbl += "<tr><th>계</th><th>" + tel.length + "</th><th>" + sem.length + "</th></tr></table>";
+      document.getElementById("table-holder").innerHTML = tbl;
+
+      /* stats */
+      var byType = { A: 0, B: 0, C: 0 };
+      cs.forEach(function (c) { if (byType[c.type] !== undefined) byType[c.type]++; });
+      text("stat-questions", String(qs.length));
+      text("stat-q-inline", String(qs.length));
+      text("stat-corrections", String(cs.length));
+      text("stat-c-inline", String(cs.length));
+      text("stat-corrections-sub", "본인 오개념 " + byType.A + " · AI 오류 " + byType.B + " · 방식 교정 " + byType.C);
+      text("stat-b", String(byType.B));
+
+      var maxDate = "";
+      qs.concat(cs).forEach(function (r) { if (r.date && r.date > maxDate) maxDate = r.date; });
+      text("stat-updated", maxDate);
+      text("stat-updated-eyebrow", maxDate + " 갱신");
+
+      /* B01 / B02 cards from CSV */
+      ["B01", "B02"].forEach(function (id) {
+        var c = cs.find(function (r) { return r.correction_id === id; });
+        var card = document.getElementById("corr-" + id);
+        if (!c || !card) return;
+        card.querySelector('[data-field="initial"]').textContent = c.initial_understanding;
+        card.querySelector('[data-field="wrong"]').textContent = c.what_was_wrong;
+        card.querySelector('[data-field="corrected"]').textContent = c.corrected_understanding;
+      });
+    })
+    .catch(function () {
+      document.getElementById("load-error").style.display = "block";
+    });
+})();
+</script>
+</body>
+</html>
